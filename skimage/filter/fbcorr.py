@@ -2,7 +2,7 @@ import numpy as np
 #from skimage.util.shape import view_as_windows
 from ..util.shape import view_as_windows
 
-def fbcorr_dot(arr_in, arr_fb, mode='valid'):
+def fbcorr(arr_in, arr_fb, mode='valid'):
 
     assert arr_in.ndim == 3
     assert arr_fb.ndim == 4
