@@ -1,6 +1,7 @@
 import numpy as np
-#from skimage.util.shape import view_as_windows
-from ..util.shape import view_as_windows
+from skimage.util.shape import view_as_windows
+#from ..util.shape import view_as_windows
+#from pythor3.wildwest.rolling_view import rolling_view
 
 def fbcorr(arr_in, arr_fb, mode='valid'):
 
@@ -19,24 +20,48 @@ def fbcorr(arr_in, arr_fb, mode='valid'):
 
     # -- reshape arr_in
     arr_inr = view_as_windows(arr_in, (fbh, fbw, 1))
-    arr_inrm = arr_inr.reshape(arr_inr.shape[:2] + (-1,))
+    #arr_inr = rolling_view(arr_in, (fbh, fbw))
+    outh, outw = arr_inr.shape[:2]
+    arr_inrm = arr_inr.reshape(outh * outw, -1)
 
     # -- reshape arr_fb
     arr_fb = arr_fb.transpose((0, 3, 1, 2))
     arr_fbm = arr_fb.reshape(fbn, -1)
 
     # -- correlate !
+    #import IPython; ipshell = IPython.embed; ipshell(banner1='ipshell')
+    print 'shape', arr_inrm.shape, arr_fbm.T.shape
     arr_out = np.dot(arr_inrm, arr_fbm.T)
-    arr_out = arr_out.reshape(arr_inr.shape[:2] + (-1,))
+    arr_out = arr_out.reshape(outh, outw, -1)
 
     return arr_out
 
 
-#def main():
-    #arr_in = np.random.randn(5, 5, 2)
-    #fb = np.random.randn(4, 3, 3, 2)
+try:
+    fbcorr = profile(fbcorr)
+except NameError:
+    pass
 
-    #print fbcorr_dot(arr_in, fb).shape
 
-#if __name__ == '__main__':
-    #main()
+def main():
+    arr_in = np.random.randn(128, 128, 128).astype('f')
+    fb = np.random.randn(256, 5, 5, 128).astype('f')
+
+    import time
+    N = 10
+    start = time.time()
+    for i in xrange(N):
+        print i
+        print fbcorr(arr_in, fb).shape
+    end = time.time()
+    fps = N / (end - start)
+    print fps
+    tim = 1. / fps
+    print tim
+
+    flops = np.cumprod(arr_in.shape[:2] + fb.shape)[-1] * 2
+    gflops = (flops / 1e9)
+    print 'gflops / sec', 1. * gflops / tim
+
+if __name__ == '__main__':
+    main()

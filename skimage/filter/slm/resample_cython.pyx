@@ -25,9 +25,9 @@ def upsample_cython(
     cdef Py_ssize_t iy, ix, iz
     cdef Py_ssize_t oy, ox, oz
 
-    for oy in prange(outh, nogil=True):#, schedule=dynamic):
+    for oy in prange(outh, nogil=True):
         if inh != outh:
-            iy = <Py_ssize_t>(1. * oy * (1. * inh / outh))
+            iy = <Py_ssize_t>(oy * (1. * inh / outh))
         else:
             iy = oy
         for ox in range(outw):

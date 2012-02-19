@@ -10,6 +10,7 @@ l.shape = l.shape + (1,)
 l = l.astype('float32')
 #a = np.random.randn(5, 3, 4).astype('float32')
 l = np.tile(l, 96)
+print l.shape
 
 #r = resample_cython.upsample_cython(a, (6, 4, 4))
 #print r
@@ -19,10 +20,13 @@ start = time.time()
 for i in xrange(N):
     out = np.empty((1024, 1024, l.shape[-1]), dtype='float32')
     resample_cython.upsample_cython(l, out)
-    print out.shape
+    print out.shape#
 end = time.time()
-print N / (end - start)
+fps = N / (end - start)
+print fps
+print 1. / fps
 
-pl.matshow(out[:,:,-1])
-pl.show()
+#pl.matshow(out[:,:,-1])
+#pl.matshow(out[:,:,20])
+#pl.show()
 
