@@ -15,6 +15,7 @@ def lpool(arr_in, ker_shape=(3, 3), order=1, stride=1):
     win_shape = ker_shape + (1,)
     xpr = view_as_windows(xp, win_shape)[::stride, ::stride]
     xprm = xpr.reshape(xpr.shape[:3] + (-1,))
+    #xprms = whatever.reduction.sum(xprm, axis=-1)
     xprms = xprm.sum(-1)
     arr_out = xprms ** (1.0 / order)
 

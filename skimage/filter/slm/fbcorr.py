@@ -1,7 +1,6 @@
 import numpy as np
 from skimage.util.shape import view_as_windows
-#from ..util.shape import view_as_windows
-#from pythor3.wildwest.rolling_view import rolling_view
+
 
 def fbcorr(arr_in, arr_fb, mode='valid'):
 
@@ -20,7 +19,6 @@ def fbcorr(arr_in, arr_fb, mode='valid'):
 
     # -- reshape arr_in
     arr_inr = view_as_windows(arr_in, (fbh, fbw, 1))
-    #arr_inr = rolling_view(arr_in, (fbh, fbw))
     outh, outw = arr_inr.shape[:2]
     arr_inrm = arr_inr.reshape(outh * outw, -1)
 
@@ -29,8 +27,7 @@ def fbcorr(arr_in, arr_fb, mode='valid'):
     arr_fbm = arr_fb.reshape(fbn, -1)
 
     # -- correlate !
-    #import IPython; ipshell = IPython.embed; ipshell(banner1='ipshell')
-    print 'shape', arr_inrm.shape, arr_fbm.T.shape
+    #print 'shape', arr_inrm.shape, arr_fbm.T.shape
     arr_out = np.dot(arr_inrm, arr_fbm.T)
     arr_out = arr_out.reshape(outh, outw, -1)
 
@@ -44,8 +41,10 @@ except NameError:
 
 
 def main():
-    arr_in = np.random.randn(128, 128, 128).astype('f')
-    fb = np.random.randn(256, 5, 5, 128).astype('f')
+    arr_in = np.random.randn(200, 200, 64).astype('f')
+    fb = np.random.randn(128, 8, 8, 64).astype('f')
+
+    from pythor3.operation import fbcorr as fbcorr_pt3
 
     import time
     N = 10
@@ -53,6 +52,7 @@ def main():
     for i in xrange(N):
         print i
         print fbcorr(arr_in, fb).shape
+        #pt3_fbcorr(a, fb, plugin='cthor', plugin_kwargs=dict(variant='sse:tbb'))
     end = time.time()
     fps = N / (end - start)
     print fps
