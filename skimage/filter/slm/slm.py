@@ -8,22 +8,30 @@ from pythor3.operation import fbcorr as pt3fbcorr
 from pythor3.operation import lpool as pt3lpool
 from pythor3.operation import lnorm as pt3lnorm
 
+nfs = [64, 128, 256]
+nb = (9, 9)
+fbs = []
+fbd = 1
+
+for nf in nfs:
+    fbshape = (nf,) + nb + (fbd,)
+    print 'generating', fbshape, 'filterbank'
+    fb = np.random.randn(*fbshape).astype('f')
+    fbs += [fb]
+    fbd = nf
 
 def pt3slm(arr_in):
 
     assert arr_in.ndim == 3
     inh, inw, ind = arr_in.shape
 
-    #nfs = [32, 64, 128]
-    nfs = [64, 128, 256]
-    nb = (9, 9)
-
-    for nf in nfs:
-        fbshape = (nf,) + nb + (arr_in.shape[-1],)
-        fb1 = np.random.randn(*fbshape).astype('f')
+    for fb in fbs:
+    #for nf in nfs:
+        #fbshape = (nf,) + nb + (arr_in.shape[-1],)
+        #fb1 = np.random.randn(*fbshape).astype('f')
         n1 = pt3lnorm(arr_in, inker_shape=nb, outker_shape=nb, threshold=1.0,
                       plugin='cthor', plugin_kwargs=dict(variant='sse:tbb'))
-        f1 = pt3fbcorr(n1, fb1,
+        f1 = pt3fbcorr(n1, fb,
                        plugin='cthor', plugin_kwargs=dict(variant='sse:tbb'))
         p1 = pt3lpool(f1, ker_shape=nb, order=2, stride=2,
                       plugin='cthor', plugin_kwargs=dict(variant='sse:tbb'))
@@ -36,21 +44,6 @@ def slm(arr_in):
     assert arr_in.ndim == 3
     inh, inw, ind = arr_in.shape
 
-    #nfs = [32, 64, 128]
-    nfs = [64, 128, 256]
-    #nb = (9, 9)
-    nb = (5, 5)
-    fbs = []
-    fbd = arr_in.shape[-1]
-
-    for nf in nfs:
-        fbshape = (nf,) + nb + (fbd,)
-        print 'generating', fbshape, 'filterbank'
-        fb = np.random.randn(*fbshape).astype('f')
-        fbs += [fb]
-        fbd = nf
- 
-    #for nf in nfs:
     for fb in fbs:
         n1 = lnorm(arr_in, inker_shape=nb, threshold=1.0)
         f1 = fbcorr(n1, fb)
@@ -61,14 +54,21 @@ def slm(arr_in):
 
 def main():
 
+    import sys
+    which = sys.argv[1]
+
     a = np.random.randn(200, 200, 1).astype('f')
 
     import time
     N = 10
     start = time.time()
     for i in xrange(N):
-        out = slm(a)
-        #out = pt3slm(a)
+        if which == 'cthor':
+            out = pt3slm(a)
+        elif which == 'new':
+            out = slm(a)
+        else:
+            raise NotImplementedError()
         print out.shape
     end = time.time()
     print N / (end - start)
